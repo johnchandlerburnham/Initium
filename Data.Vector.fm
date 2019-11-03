@@ -1,0 +1,135 @@
+import Logic
+import Induction
+import Data.Nat
+import Data.Fin
+
+// A vector is a list with a statically known length
+T Vector {A : Type} (len : -Nat)
+| cons {~len : -Nat, head : A, tail : Vector(A, len)} (%succ(+len))
+| nil                                                 (%zero)
+
+// ::::::::::::::::::::::
+// :: Simple functions ::
+// ::::::::::::::::::::::
+
+// A type-safe "head" that returns the first element of a non-empty vector
+// - On the `cons` case, return the vector's head
+// - On the `nil` case, prove it is unreachable, since `xs.len > 0`
+head : {~T : Type, ~n : -Nat, xs : Vector(T, %succ(+n))} -> T
+  case/Vector xs
+  + refl(~Nat, ~%succ(+n)) as e : Equal(Nat, xs.len, %succ(+n))
+  | cons => xs.head
+  | nil  => absurd(zero_isnt_succ(~n, e), ~T)
+  : T
+
+// Returns all but the first element of a non-empty vector
+tail : {~T : Type, ~n : -Nat, xs : Vector(T, %succ(+n))} -> Vector(T, n)
+  case/Vector xs
+  + refl(~Nat, ~%succ(+n)) as e : Equal(Nat, xs.len, %succ(+n))
+  | cons => rewrite(___ cong(____ ~%pred, e), ~{x} Vector(T,%x), xs.tail)
+  | nil  => absurd(succ_isnt_zero(~%+n,sym(___ e)), ~Vector(T,%+n))
+  : Vector(T, %+n)
+
+// Returns a pair with the head and the tail of a non-empty vector
+split0 : {~T : Type, ~n : -Nat, xs : Vector(T, %succ(+n))} -> [:T, Vector(T,n)]
+  case/Vector xs
+  + refl(~Nat, ~%succ(+n)) as e : Equal(Nat, xs.len, %succ(+n))
+  | cons => let e = cong(____ ~%pred, e)
+    [xs.head, rewrite(___ e, ~{x} Vector(T,%x), xs.tail)]
+  | nil  => absurd(succ_isnt_zero(~%+n,sym(___ e)), ~[:T, Vector(T,%+n)])
+  : [:T, Vector(T,%+n)]
+
+// :::::::::::::::::::::::::
+// :: Recursive Functions ::
+// :::::::::::::::::::::::::
+
+//#split*N
+//  : { ~T : Type
+//    , ~n : Fin(nat(N))
+//    , xs : Vector(T, %succ(+n))
+//    } -> [:Vector(T,)
+
+//// Returns the same vector
+#same*N : !{~A : Type, xs : Vector(A, %$nat(N))} -> Vector(A, %$nat(N))
+  case/Vector xs
+  + refl(~Nat, ~%$nat(+N)) as e : Equal(Nat, %pred(+xs.len), %$nat(+N))
+  + refl(~Nat, ~%$nat(+N)) as e2 : Equal(Nat, %pred(+xs.len), %$nat(+N))
+  | cons => 
+    let tail = rewrite(___ e, ~{x} Vector(A, %x), xs.tail)
+    let tail = rewrite(___ sym(___ e2), ~{x} Vector(A, %x), same(~A,tail))
+    cons(~A, ~xs.len, xs.head, tail)
+  | nil  => nil(~A)
+  : Vector(A, xs.len)
+halt: nil(_)
+
+// Allocates a Vec with given length
+#alloc*N : {~A : Type, x : !A} -> !Vector(A, %$nat(N))
+  cons(~A, ~%$nat(+N), x, alloc)
+halt: nil(_)
+
+// Creates a vector with `N` ascending words starting from `idx` 
+#range*N : !{init : Word} -> Vector(Word, %$nat(N))
+  cons(~Word, ~%$nat(+N), init, range(init .+. 1))
+halt: nil(_)
+
+// Applies a function to every element of a vector
+#map*N :
+  { ~A : Type
+  , ~B : Type
+  , f : !A -> B
+  } -> ! {xs : Vector(A, %$nat(N))} -> Vector(B, %$nat(N))
+  case/Vector xs
+  + refl(~Nat, ~%$nat(+N)) as e : Equal(Nat, %pred(+xs.len), %$nat(+N))
+  + refl(~Nat, ~%$nat(+N)) as e2 : Equal(Nat, %pred(+xs.len), %$nat(+N))
+  | cons =>
+    let tail = rewrite(___ e, ~{x} Vector(A, %x), xs.tail)
+    let tail = rewrite(___ sym(___ e2), ~{x} Vector(B, %x), map(tail))
+    cons(~B, ~xs.len, f(xs.head), tail)
+  | nil => nil(~B)
+  : Vector(B, xs.len)
+halt: nil(~B)
+
+// Concatenates two vectors
+#concat*N : 
+  ! { ~A : Type
+    , xs : Vector(A, %$nat(N))
+    , m : -Nat
+    , ys : Vector(A, %+m)
+    } -> Vector(A, %($add_ind(N))(+m))
+  case/Vector xs
+  + refl(~Nat, ~%$nat(step(+N))) as e : Equal(Nat, xs.len, %$nat(step(+N)))
+  | cons =>
+     let tail = rewrite(___ cong(____ ~%pred, e), ~{x} Vector(A,%x),xs.tail)
+     let tail = concat(~A, tail, m, ys)
+     cons(~A, ~%($add_ind(+N))(+m), xs.head, tail)
+  | nil => let empty = succ_isnt_zero(~%$nat(+N), sym(___ e))
+      absurd(empty, ~Vector(A, %($add_ind(step(+N)))(+m)))
+  : Vector(A, %($add_ind(step(+N)))(+m))
+halt: ys
+
+// Zip a vector of functions with a vector of elements
+#zipp*N :
+  { ~A : Type
+  , ~B : Type
+  } -> ! { xs : Vector(A -> B, %$nat(N))
+         , ys : Vector(A, %$nat(N))
+         } -> Vector(B, %$nat(N))
+  case/Vector xs
+  + refl(~Nat, ~%$nat(step(+N))) as ex : Equal(Nat, xs.len, %$nat(step(+N)))
+  + refl(~Nat, ~%$nat(+N)) as ex2 : Equal(Nat, %pred(+xs.len), %$nat(+N))
+  | cons =>
+    case/Vector ys
+    + refl(~Nat, ~%$nat(step(+N))) as ey : Equal(Nat, ys.len, %$nat(step(+N)))
+    + refl(~Nat, ~%$nat(+N)) as ey2 : Equal(Nat, %pred(+ys.len), %$nat(+N))
+    | cons => 
+      let xt = rewrite(___ ex2, ~{x} Vector(A -> B, %x), xs.tail)
+      let yt = rewrite(___ ey2, ~{x} Vector(A, %x), ys.tail)
+      cons(~B, ~%$nat(+N), xs.head(ys.head), zipp(xt, yt))
+    | nil => rewrite(___ ey, ~{x} Vector(B, %x), nil(~B))
+    : Vector(B, %$nat(step(+N)))
+  | nil => rewrite(___ ex, ~{x} Vector(B, %x), nil(~B))
+  : Vector(B, %$nat(step(+N)))
+halt: nil(~B)
+
+
+
