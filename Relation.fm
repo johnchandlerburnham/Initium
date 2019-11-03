@@ -16,13 +16,13 @@ Relation : {A : Type} -> Type
 // ========================================================
 
 Reflexive : {A : Type, R : Relation(A)} -> Type
-  {~x : A} -> R(x,x)
+  {x : A} -> R(x,x)
 
 Symmetric : {A : Type, R : Relation(A)} -> Type
-  {~x : A, ~y : A, ~e : R(x,y)} -> R(y,x)
+  {x : A, y : A, e : R(x,y)} -> R(y,x)
 
 Transitive : {A : Type, R : Relation(A)} -> Type
-  {~x : A, ~y : A, ~z : A, ~e1 : R(x,y), ~e2 : R(y,z)} -> R(x,z)
+  {x : A, y : A, z : A, e1 : R(x,y), e2 : R(y,z)} -> R(x,z)
 
 Quasireflexive : {A : Type, R : Relation(A)} -> Type
   {x : A, y : A, :R(x,y)} -> And(R(x,x),R(y,y))
@@ -54,56 +54,65 @@ T Equivalence {A : Type, R : Relation(A)}
 T Proset {A : Type}
 | proset
   { R : Relation(A)
-  , preorder : Preorder(A, R)
+  , preorder : Preorder(A,R)
   }
 
 T Setoid {A : Type}
 | setoid
   { R           : Relation(A)
-  , equivalence : Equivalence(A, R)
+  , equivalence : Equivalence(A,R)
   }
+
+setoid.R : {A : Type, case s : Setoid(A)} -> Relation(A)
+| setoid => s.R
+
+setoid.equivalence : 
+  { A : Type
+  , case s : Setoid(A)
+  } -> Equivalence(A,setoid.R(A,s))
+| setoid => s.equivalence
 
 // ========================================================
 // =         Properties of Relations over Setoids         =
 // ========================================================
 
-Coreflexive : {A : Type, R : Relation(A), s : Setoid(A)} -> Type
-  {x : A, y : A, :R(x,y)} -> case/Setoid s | setoid => s.R(x,y) : Type
+Coreflexive : {A : Type, R : Relation(A), s : -Setoid(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, :R(x,y)} -> eq(x,y)
 
-AntiSymmetric : {A : Type, R : Relation(A), s : Setoid(A)} -> Type
-  {x : A, y : A, :R(x,y), :R(y,x)} -> case/Setoid s | setoid => s.R(x,y) : Type
+AntiSymmetric : {A : Type, R : Relation(A), s : -Setoid(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, :R(x,y), :R(y,x)} -> eq(x,y)
 
-SemiConnexity : {A : Type, R : Relation(A), s : Setoid(A)} -> Type
-  { x : A
-  , y : A
-  , e : case/Setoid s | setoid => Not(s.R(x,y)) : Type
-  } -> Or(R(x,y), R(y,x))
+SemiConnexity : {A : Type, R : Relation(A), s : -Setoid(A)} -> Type
+  let eq = setoid.R(A,+s)
+  { x : A, y : A, e : Not(eq(x,y)) } -> Or(R(x,y), R(y,x))
 
 // ========================================================
 // =        More Relations and Types over Setoids         =
 // ========================================================
 
-T PartialOrder {A : Type, R : Relation(A), s : Setoid(A)}
+T PartialOrder {A : Type, R : Relation(A), s : -Setoid(A)}
 | partial_order
   { reflexive      : Reflexive(A,R)
   , antisymmetric  : AntiSymmetric(A,R,s)
   , transitive     : Transitive(A,R)
   }
 
-T Poset {A : Type, s : Setoid(A)}
+T Poset {A : Type, s : -Setoid(A)}
 | poset
   { R             : Relation(A)
   , partial_order : PartialOrder(A, R, s)
   }
 
-T TotalOrder {A : Type, R : Relation(A), s : Setoid(A)}
+T TotalOrder {A : Type, R : Relation(A), s : -Setoid(A)}
 | total_order
   { antisymmetric  : AntiSymmetric(A,R,s)
   , transitive     : Transitive(A,R)
   , connexity      : Connexity(A,R)
   }
 
-T Chain {A : Type, s : Setoid(A)}
+T Chain {A : Type, s : -Setoid(A)}
 | chain
   { R           : Relation(A)
   , total_order : TotalOrder(A,R,s)

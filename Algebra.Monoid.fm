@@ -9,7 +9,7 @@ import Algebra.Semigroup
 // =                     Definition                       =
 // ========================================================
 
-T Monoid {A : Type, s : Setoid(A)}
+T Monoid {A : Type, s : -Setoid(A)}
 | monoid
   { f           : Op2(A)
   , e           : A
@@ -42,7 +42,7 @@ T Monoid {A : Type, s : Setoid(A)}
 // =                     Extensions                       =
 // ========================================================
 
-T AbelianMonoid {A : Type, s : Setoid(A)}
+T AbelianMonoid {A : Type, s : -Setoid(A)}
 | abelian_monoid
   { f           : Op2(A)
   , e           : A
@@ -51,7 +51,7 @@ T AbelianMonoid {A : Type, s : Setoid(A)}
   , commutative : Commutative(A,s,f)
   }
 
-T IdempotentMonoid {A : Type, s : Setoid(A)}
+T IdempotentMonoid {A : Type, s : -Setoid(A)}
 | idempotent_monoid
   { f           : A -> A -> A
   , e           : A

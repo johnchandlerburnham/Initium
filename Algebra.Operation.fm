@@ -23,151 +23,129 @@ Op3 : {A : Type} -> Type
 // =           Properties of Binary Operations            =
 // ========================================================
 
-Associative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, z : A} -> s.R(f(f(x,y),z), f(x,f(y,z)))
-  : Type
+Associative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, z : A} -> eq(f(f(x,y),z), f(x,f(y,z)))
 
-PowerAssociative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A} -> s.R(f(f(x,x),x), f(x,f(x,x)))
-  : Type
+PowerAssociative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A} -> eq(f(f(x,x),x), f(x,f(x,x)))
 
-LeftAlternative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> s.R(f(f(x,x),y), f(x,f(x,y)))
-  : Type
+LeftAlternative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> eq(f(f(x,x),y), f(x,f(x,y)))
 
-RightAlternative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-  {x : A, y : A} -> s.R(f(y,f(x,x)), f(f(y,x),x))
-    : Type
+RightAlternative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> eq(f(y,f(x,x)), f(f(y,x),x))
 
-Alternative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
+Alternative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
    And(LeftAlternative(A,s,f), RightAlternative(A,s,f))
 
-Flexible : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> s.R(f(f(x,y),x), f(x,f(y,x))) 
-  : Type
+Flexible : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> eq(f(f(x,y),x), f(x,f(y,x))) 
 
-Commutative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> s.R(f(x,y), f(y,x))
-  : Type
+Commutative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> eq(f(x,y), f(y,x))
 
-Medial : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, u : A, z : A} -> s.R(f(f(x,y), f(u,z)), f(f(x,u),f(y,z)))
-  : Type
+Medial : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, u : A, z : A} -> eq(f(f(x,y), f(u,z)), f(f(x,u),f(y,z)))
 
-LeftSemimedial : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, z : A} -> s.R(f(f(x,x), f(y,z)), f(f(x,y),f(x,z)))
-  : Type
+LeftSemimedial : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, z : A} -> eq(f(f(x,x), f(y,z)), f(f(x,y),f(x,z)))
 
-RightSemimedial : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, z : A} -> s.R(f(f(x,x), f(y,z)), f(f(x,y),f(x,z)))
-  : Type
+RightSemimedial : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, z : A} -> eq(f(f(x,x), f(y,z)), f(f(x,y),f(x,z)))
 
-Semimedial : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
+Semimedial : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
   And(LeftSemimedial(A,s,f),RightSemimedial(A,s,f))
 
-Idempotent : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A} -> s.R(f(x,x), x) 
-  : Type
+Idempotent : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A} -> eq(f(x,x), x)
 
-Unipotent : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> s.R(f(x,x), f(y,y))
-  : Type
+Unipotent : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> eq(f(x,x), f(y,y))
 
-Zeropotent : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> [:s.R(f(f(x,x),y),f(x,x)), s.R(f(y,f(x,x)),f(x,x))]
-  : Type
+Zeropotent : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> [:eq(f(f(x,x),y),f(x,x)), eq(f(y,f(x,x)),f(x,x))]
 
-Null : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, u : A, v : A} -> [:s.R(f(x,y),x), s.R(f(u,v),v)]
-  : Type
+Null : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, u : A, v : A} -> [:eq(f(x,y),x), eq(f(u,v),v)]
 
-LeftCancellative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid => 
-    {x : A, y : A, z : A, :s.R(f(x,y),f(x,z))} -> s.R(y,z)
-  : Type
+LeftCancellative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s) 
+  {x : A, y : A, z : A, :eq(f(x,y),f(x,z))} -> eq(y,z)
 
-RightCancellative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid => 
-    {x : A, y : A, z : A, :s.R(f(y,x),f(z,x))} -> s.R(y,z)
-  : Type
+RightCancellative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s) 
+  {x : A, y : A, z : A, :eq(f(y,x),f(z,x))} -> eq(y,z)
 
-Cancellative : {A : Type, s : Setoid(A), f : Op2(A)} -> Type;
+Cancellative : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type;
   And(LeftCancellative(A,s,f),RightCancellative(A,s,f))
 
-LatinSquare : {A : Type, s : Setoid(A), f : Op2(A)} -> Type
-  case/Setoid s | setoid => 
-    {a : A, b : A} -> [x : A, y : A, :s.R(f(a,x),b), s.R(f(y,a),b)]
-  : Type
+LatinSquare : {A : Type, s : -Setoid(A), f : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {a : A, b : A} -> [x : A, y : A, :eq(f(a,x),b), eq(f(y,a),b)]
 
 
 // ========================================================
 // =                Properties of Operands                =
 // ========================================================
 
-LeftZero : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
-  case/Setoid s | setoid =>
-  {y : A} -> s.R(f(y,e), e)
-  : Type
+LeftZero : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> eq(f(y,e), e)
 
-RightZero : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
-  case/Setoid s | setoid =>
-    {y : A} -> s.R(f(e,y), e)
-  : Type
+RightZero : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> eq(f(e,y), e)
 
-Zero : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
+Zero : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
   And(LeftZero(A,s,f,e),RightZero(A,s,f,e))
 
-LeftIdentity : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
-  case/Setoid s | setoid =>
-   {y : A} -> s.R(f(y,e), y)
-  : Type
+LeftIdentity : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> eq(f(y,e), y)
 
-RightIdentity : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
-  case/Setoid s | setoid =>
-    {y : A} -> s.R(f(e,y), y)
-  : Type
+RightIdentity : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> eq(f(e,y), y)
 
-Identity : {A : Type, s : Setoid(A), f : Op2(A), e : A} -> Type
+Identity : {A : Type, s : -Setoid(A), f : Op2(A), e : A} -> Type
   And(LeftIdentity(A,s,f,e), RightIdentity(A,s,f,e))
 
 LeftInverse :
   { A : Type
-  , s : Setoid(A)
+  , s : -Setoid(A)
   , f : Op2(A)
   , e : A
   , p : Identity(A,s,f,e)
   } -> Type
-  case/Setoid s | setoid =>
-    {y : A} -> [x : A, s.R(f(x,y),e)]
-  : Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> [x : A, eq(f(x,y),e)]
 
 RightInverse : 
   { A : Type
-  , s : Setoid(A)
+  , s : -Setoid(A)
   , f : Op2(A)
   , e : A
   , p : Identity(A,s,f,e)
   } -> Type
-  case/Setoid s | setoid =>
-    {y : A} -> [x : A, s.R(f(y,x),e)]
-  : Type
+  let eq = setoid.R(A,+s)
+  {y : A} -> [x : A, eq(f(y,x),e)]
 
 Inverse :
   { A : Type
-  , s : Setoid(A)
+  , s : -Setoid(A)
   , f : Op2(A)
   , e : A
   , p : Identity(A,s,f,e)
@@ -178,22 +156,19 @@ Inverse :
 // =           Properties of 2 Binary Operations          =
 // ========================================================
 
-LeftDistributive : {A : Type, s : Setoid(A), f : Op2(A), g : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, z : A} -> s.R(f(x, g(y,z)), g(f(x,y),f(x,z)))
-  : Type
+LeftDistributive : {A : Type, s : -Setoid(A), f : Op2(A), g : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, z : A} -> eq(f(x, g(y,z)), g(f(x,y),f(x,z)))
 
-RightDistributive : {A : Type, s : Setoid(A), f : Op2(A), g : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A, z : A} -> s.R(f(g(y,z),x), g(f(y,x),f(z,x)))
-  : Type
+RightDistributive : {A : Type, s : -Setoid(A), f : Op2(A), g : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A, z : A} -> eq(f(g(y,z),x), g(f(y,x),f(z,x)))
 
-Distributive : {A : Type, s : Setoid(A), f : Op2(A), g : Op2(A)} -> Type
+Distributive : {A : Type, s : -Setoid(A), f : Op2(A), g : Op2(A)} -> Type
   And(LeftDistributive(A,s,f,g), RightDistributive(A,s,f,g))
 
-Absorption : {A : Type, s : Setoid(A), f : Op2(A), g : Op2(A)} -> Type
-  case/Setoid s | setoid =>
-    {x : A, y : A} -> [:s.R(g(x, f(x, y)),x), s.R(f(x, g(x,y)),x)]
-  : Type
+Absorption : {A : Type, s : -Setoid(A), f : Op2(A), g : Op2(A)} -> Type
+  let eq = setoid.R(A,+s)
+  {x : A, y : A} -> [:eq(g(x, f(x, y)),x), eq(f(x, g(x,y)),x)]
 
 

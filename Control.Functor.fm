@@ -1,0 +1,62 @@
+import Logic
+import Relation
+import Data.Function
+
+// A functor consists of...
+
+T Functor {F : Type -> Type}
+| functor { map : {~A : Type , ~B : Type , f : A -> B, x : F(A)} -> F(B) }
+
+T LawfulFunctor {F : Type -> Type, s : {A : Type} -> Setoid(F(A))}
+| lawful_functor
+
+  // A mapping function
+  { map : {~A : Type , ~B : Type , f : A -> B, x : F(A)} -> F(B)
+
+  // Satisfying the identity law
+  , identity : {~A : Type , fa : F(A)} ->
+      case/Setoid s(A) as s | setoid =>
+        s.R(map(~A, ~A, id(~A),fa),fa)
+      : Type
+
+  // Satisfying the composition law
+  , composition :
+    { ~A : Type
+    , ~B : Type
+    , ~C : Type
+    , g  : B -> C
+    , f  : A -> B
+    , fa : F(A)
+    } -> case/Setoid s(C) as s | setoid =>
+           s.R(map(~A, ~C, {x} g(f(x)), fa), map(~B, ~C, g, map(~A, ~B, f, fa)))
+         : Type
+  }
+
+
+functor.unlawful :
+  { ~F : Type -> Type
+  , s : {A : Type} -> Setoid(F(A))
+  , lawful : LawfulFunctor(F,s)
+  } -> Functor(F)
+  case/LawfulFunctor lawful as l
+  | lawful_functor => functor(~F, l.map)
+
+// A generic map for functors
+map :
+  { ~F : Type -> Type
+  , case fun : Functor(F)
+  , ~A : Type
+  , ~B : Type
+  ,  f : A -> B
+  } -> F(A) -> F(B)
+| functor => fun.map(~A, ~B, f)
+
+// We can modify all elements of a functor to a fixed element `x`
+map_const :
+  { ~F : Type -> Type
+  , case fun : Functor(F)
+  , ~A : Type
+  , ~B : Type
+  , x : B
+  } -> F(A) -> F(B)
+| functor => fun.map(~A, ~B, const(~B, ~A, x))
