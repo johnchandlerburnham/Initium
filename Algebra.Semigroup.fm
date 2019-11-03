@@ -15,14 +15,18 @@ T Semigroup {A : Type, s : -Setoid(A)}
   , associative : Associative(A,s,f)
   }
 
-semigroup.f : {~A : Type , s : -Setoid(A) , case m : Semigroup(A,s)} -> Op2(A)
+// ========================================================
+// =                      Accessors                       =
+// ========================================================
+
+semigroup.f : {A : Type , s : -Setoid(A) , case m : Semigroup(A,s)} -> Op2(A)
 | semigroup => m.f
 
 semigroup.associative : 
   { A : Type
   , s : -Setoid(A)
   , case m : Semigroup(A,s)
-  } -> Associative(A,s,semigroup.f(~A,s,m))
+  } -> Associative(A,s,semigroup.f(A,s,m))
 | semigroup => m.associative
 
 // ========================================================
@@ -41,9 +45,9 @@ magma_to_semigroup :
 semigroup_to_magma :
   {~A : Type
   , s : -Setoid(A)
-  , m : Semigroup(A,s)
+  , case sem : Semigroup(A,s)
   } -> Magma(A,s)
-  magma(~A,~s,semigroup.f(~A,s,m))
+| semigroup => magma(~A,~s^,sem.f)
 
 // ========================================================
 // =                     Extensions                       =

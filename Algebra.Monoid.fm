@@ -18,25 +18,49 @@ T Monoid {A : Type, s : -Setoid(A)}
   }
 
 // ========================================================
+// =                      Accessors                       =
+// ========================================================
+
+monoid.f : {A : Type , s : -Setoid(A) , case m : Monoid(A,s)} -> Op2(A)
+| monoid => m.f
+
+monoid.e : {A : Type , s : -Setoid(A) , case m : Monoid(A,s)} -> A
+| monoid => m.e
+
+monoid.associative :
+  { A : Type
+  , s : -Setoid(A)
+  , case m : Monoid(A,s)
+  } -> Associative(A,s,monoid.f(A,s,m))
+| monoid => m.associative
+
+monoid.identity :
+  { A : Type
+  , s : -Setoid(A)
+  , case m : Monoid(A,s)
+  } -> Identity(A,s,monoid.f(A,s,m), monoid.e(A,s,m))
+| monoid => m.identity
+
+// ========================================================
 // =                     Conversions                      =
 // ========================================================
 
 //semigroup_to_monoid :
-  //{~A : Type
-  //,~s : Setoid(A)
-  //, case sem : Semigroup(A,s)
-  //, ~e : A
-  //, identity : case/Semigroup sem | semigroup => Identity(A,s,sem.f,e) : Type
-  //} -> Monoid(A,s)
-//| semigroup => monoid(~A,~s,sem.f,e,sem.associative,identity)
-
-// Monoids are Semigroups
-//monoid_to_semigroup :
 //  {~A : Type
-//  ,~s : Setoid(A)
-//  , case m : Monoid(A,s)
-//  } -> Semigroup(A,s)
-//| monoid => semigroup(~A,~s,m.f, m.associative)
+//  , s : -Setoid(A)
+//  , case m : Semigroup(A,s)
+//  , e : A
+//  , identity : Identity(A,s,semigroup.f(A,s,m),e)
+//  } -> Monoid(A,s)
+//| semigroup => monoid(~A,~s^,m.f,e,m.associative,identity)
+
+// All Monoids are Semigroups
+monoid_to_semigroup :
+  {~A : Type
+  , s : -Setoid(A)
+  , case m : Monoid(A,s)
+  } -> Semigroup(A,s)
+| monoid => semigroup(~A,~s^,m.f, m.associative)
 
 // ========================================================
 // =                     Extensions                       =

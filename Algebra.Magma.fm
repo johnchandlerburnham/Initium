@@ -10,5 +10,9 @@ import Algebra.Operation
 T Magma {A : Type, s : -Setoid(A)}
 | magma { f : Op2(A) }
 
+// ========================================================
+// =                      Accessors                       =
+// ========================================================
+
 magma.f : {A : Type , s : -Setoid(A) , case m : Magma(A,s)} -> Op2(A)
 | magma => m.f
