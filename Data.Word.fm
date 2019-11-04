@@ -1,3 +1,116 @@
+import Logic
+
+word.max : Word
+  4294967295
+
+word.min : Word
+  0
+
+word.true : Equal(Word, %1, %1)
+  refl(~Word, ~%1)
+
+word.false : Equal(Word, %0, %0)
+  refl(~Word, ~%0)
+
+Eq : {a : Word, b : Word} -> Type
+  Equal(Word, %(a .==. b), %1)
+
+Neq : {a : Word, b : Word} -> Type
+  Equal(Word, %((a .==. b) .#. 1), %1)
+
+Lth : {a : Word, b : Word} -> Type
+  Equal(Word, %(a .<. b), %1)
+
+Lte : {a : Word, b : Word} -> Type
+  Equal(Word, %((a .>. b) .#. 1), %1)
+
+Gth : {a : Word, b : Word} -> Type
+  Equal(Word, %(a .>. b), %1)
+
+Gte : {a : Word, b : Word} -> Type
+  Equal(Word, %((a .<. b) .#. 1), %1)
+
+eq : {a : Word, b : Word, e : Eq(a,b)} -> Word
+  a .==. b
+
+neq : {a : Word, b : Word, e : Neq(a,b)} -> Word
+  (a .==. b) .#. 1
+
+lth : {a : Word, b : Word, e : Lth(a,b)} -> Word
+  a .<. b
+
+gte : {a : Word, b : Word, e : Gte(a,b)} -> Word
+  (a .<. b) .#. 1
+
+gth : {a : Word, b : Word, e : Gth(a,b)} -> Word
+  a .>. b
+
+lte : {a : Word, b : Word, e : Lte(a,b)} -> Word
+  (a .>. b) .#. 1
+
+test_types : [:Word, :Word, :Word, :Word, :Word, Word]
+  [ eq(1, 1, word.true)
+  , neq(1, 2, word.true)
+  , lth(1, 2, word.true)
+  , gte(2, 1, word.true)
+  , gth(2, 1, word.true)
+  , lte(1, 2, word.true)
+  ]
+
+//test_types_bad : [:Word, :Word, :Word, :Word, :Word, Word]
+//  [ eq(1, 2, word.true)
+//  , neq(1, 1, word.true)
+//  , lth(2, 1, word.true)
+//  , gte(1, 2, word.true)
+//  , gth(1, 1, word.true)
+//  , lte(3, 2, word.true)
+//  ]
+
+add : {a : Word, b : Word, e : Gte(a .+. b, a)} -> Word
+  a .+. b
+
+sub : {a : Word, b : Word, e : Lte(b,a)} -> Word
+  a .-. b
+
+mul : {a : Word, b : Word, e : Eq((a .*. b) ./. a, a)} -> Word
+  a .*. b
+
+div : {a : Word, b : Word, e : Neq(b,0)} -> Word
+  a ./. b
+
+mod : {a : Word, b : Word, e : Neq(b,0)} -> Word
+  a .%. b
+
+test_add : Word
+  add(1,2, word.true)
+
+test_sub : Word
+  sub(2,1, word.true)
+
+test_mul : Word
+  mul(3,3, word.true, word.true)
+
+test_div : Word
+  div(3,3, word.true)
+
+test_mod : Word
+  mod(3,3, word.true)
+
+//add_overflow : Word
+//  add(word.max, word.max, word.true)
+//
+//sub_underflow : Word
+//  sub(1, 2, word.true)
+//
+//mul_overflow : Word
+//  mul(word.max, word.max, word.true)
+//
+//div_by_zero : Word
+//  div(3,0, word.true)
+//
+//mod_by_zero : Word
+//  div(3,0, word.true)
+
 difference: {a : Word, b : Word} -> Word
   if a .>. b:
     a .-. b
@@ -6,3 +119,4 @@ difference: {a : Word, b : Word} -> Word
 
 sqrt: {n : Word} -> Word
   .u.(.f.(n) .^^. 0.5)
+
