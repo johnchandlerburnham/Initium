@@ -1,63 +1,123 @@
 import Logic
 
-word.max : Word
-  4294967295
+// ========================================================
+// =                     Definition                       =
+// ========================================================
 
-word.min : Word
-  0
+word.max : Word; 4294967295
+word.min : Word; 0
 
-word.true : Equal(Word, %1, %1)
-  refl(~Word, ~%1)
+// ========================================================
+// =                     Operations                       =
+// ========================================================
 
-word.false : Equal(Word, %0, %0)
-  refl(~Word, ~%0)
+// we replace several built-in functions for consistency
+// with Word64, Word128 and Word256
 
-Eq : {a : Word, b : Word} -> Type
-  Equal(Word, %(a .==. b), %1)
+// if-then-else
+ite : {~A : Word -> Type, c : Word, x : A(c), y : A(c)} -> A(c)
+  if c: x else: y
 
-Neq : {a : Word, b : Word} -> Type
-  Equal(Word, %((a .==. b) .#. 1), %1)
+add  : {a : Word, b : Word} -> Word; a .+. b
+sub  : {a : Word, b : Word} -> Word; a .-. b
+mul  : {a : Word, b : Word} -> Word; a .*. b
+div  : {a : Word, b : Word} -> Word; a ./. b
+mod  : {a : Word, b : Word} -> Word; a .%. b
+exp  : {a : Word, b : Word} -> Word; a .^. b
+and  : {a : Word, b : Word} -> Word; a .&. b
+or   : {a : Word, b : Word} -> Word; a .|. b
+xor  : {a : Word, b : Word} -> Word; a .#. b
+rsh  : {a : Word, b : Word} -> Word; a .>>. b
+lsh  : {a : Word, b : Word} -> Word; a .<<. b
+gth  : {a : Word, b : Word} -> Word; a .>. b
+lth  : {a : Word, b : Word} -> Word; a .<. b
+gte  : {a : Word, b : Word} -> Word; (a .<. b) .#. 1
+lte  : {a : Word, b : Word} -> Word; (a .>. b) .#. 1
+eq   : {a : Word, b : Word} -> Word; a .==. b
+fadd : {a : Word, b : Word} -> Word; a .++. b
+fsub : {a : Word, b : Word} -> Word; a .--. b
+fmul : {a : Word, b : Word} -> Word; a .**. b
+fdiv : {a : Word, b : Word} -> Word; a .//. b
+fmod : {a : Word, b : Word} -> Word; a .%%. b
+fexp : {a : Word, b : Word} -> Word; a .^^. b
 
-Lth : {a : Word, b : Word} -> Type
-  Equal(Word, %(a .<. b), %1)
+not    : {a : Word} -> Word; a .#. 1 // should be .!.(a)
+u_to_f : {a : Word} -> Word; .f.(a)
+f_to_u : {a : Word} -> Word; .u.(a)
 
-Lte : {a : Word, b : Word} -> Type
-  Equal(Word, %((a .>. b) .#. 1), %1)
+// ========================================================
+// =                Type-Level Comparison                 =
+// ========================================================
 
-Gth : {a : Word, b : Word} -> Type
-  Equal(Word, %(a .>. b), %1)
+// true == 1, false == 0
+word.true : Equal(Word, %1, %1); refl(~Word, ~%1)
+word.false : Equal(Word, %0, %0); refl(~Word, ~%0)
 
-Gte : {a : Word, b : Word} -> Type
-  Equal(Word, %((a .<. b) .#. 1), %1)
+// type-level comparisons
+IsWordTrue : { f : Word -> Word -> Word, a : Word, b : Word} -> Type
+  Equal(Word, %f(a,b), %1)
+IsWordFalse : { f : Word -> Word -> Word, a : Word, b : Word} -> Type
+  Equal(Word, %f(a,b), %0)
 
-eq : {a : Word, b : Word, e : Eq(a,b)} -> Word
-  a .==. b
+// Convenient short type-level comparisons
 
-neq : {a : Word, b : Word, e : Neq(a,b)} -> Word
-  (a .==. b) .#. 1
+Eq  : {a : Word, b : Word} -> Type; Equal(Word, %eq(a,b), %1)
+Neq : {a : Word, b : Word} -> Type; Equal(Word, %not(eq(a,b)), %1)
+Lth : {a : Word, b : Word} -> Type; Equal(Word, %lth(a,b), %1)
+Lte : {a : Word, b : Word} -> Type; Equal(Word, %lte(a,b), %1)
+Gth : {a : Word, b : Word} -> Type; Equal(Word, %gth(a,b), %1)
+Gte : {a : Word, b : Word} -> Type; Equal(Word, %gte(a,b), %1)
 
-lth : {a : Word, b : Word, e : Lth(a,b)} -> Word
-  a .<. b
+// ========================================================
+// =                   Safe Operations                    =
+// ========================================================
 
-gte : {a : Word, b : Word, e : Gte(a,b)} -> Word
-  (a .<. b) .#. 1
+// These functions are *statically* checked to neither
+// overflow nor underflow
 
-gth : {a : Word, b : Word, e : Gth(a,b)} -> Word
-  a .>. b
+safe.eq  : {a : Word, b : Word, e : Eq(a,b) } -> Word; eq(a,b)
+safe.neq : {a : Word, b : Word, e : Neq(a,b)} -> Word; not(eq(a,b))
+safe.lth : {a : Word, b : Word, e : Lth(a,b)} -> Word; lth(a,b)
+safe.gte : {a : Word, b : Word, e : Gte(a,b)} -> Word; gte(a,b)
+safe.gth : {a : Word, b : Word, e : Gth(a,b)} -> Word; gth(a,b)
+safe.lte : {a : Word, b : Word, e : Lte(a,b)} -> Word; lte(a,b)
 
-lte : {a : Word, b : Word, e : Lte(a,b)} -> Word
-  (a .>. b) .#. 1
+safe.add : {a : Word, b : Word, e : Gte(add(a,b),a)} -> Word;        add(a,b)
+safe.sub : {a : Word, b : Word, e : Lte(b,a)} -> Word;               sub(a,b)
+safe.mul : {a : Word, b : Word, e : Eq(div(mul(a,b),a), a)} -> Word; mul(a,b)
+safe.div : {a : Word, b : Word, e : Neq(b,0)} -> Word;               div(a,b)
+safe.mod : {a : Word, b : Word, e : Neq(b,0)} -> Word;               mod(a,b)
 
-test_types : [:Word, :Word, :Word, :Word, :Word, Word]
-  [ eq(1, 1, word.true)
-  , neq(1, 2, word.true)
-  , lth(1, 2, word.true)
-  , gte(2, 1, word.true)
-  , gth(2, 1, word.true)
-  , lte(1, 2, word.true)
-  ]
+// -------
+// Testing
+// -------
 
-//test_types_bad : [:Word, :Word, :Word, :Word, :Word, Word]
+// proof of the comparison evidence can be provided with
+// `word.true`, since the compiler will reduce the theorem
+// to normal form automatically.
+//
+// **Success tests**
+//test_add : Word; safe.add(1,2, word.true)
+//test_sub : Word; safe.sub(2,1, word.true)
+//test_mul : Word; safe.mul(3,3, word.true)
+//test_div : Word; safe.div(3,3, word.true)
+//test_mod : Word; safe.mod(3,3, word.true)
+//test_cmps : [:Word, :Word, :Word, :Word, :Word, Word]
+//  [ safe.eq(1,1,word.true)
+//  , safe.neq(1,2,word.true)
+//  , safe.lth(1,2,word.true)
+//  , safe.gte(2,1,word.true)
+//  , safe.gth(2,1,word.true)
+//  , safe.lte(1,2,word.true)
+//  ]
+//
+// **Failure tests**
+//add_overflow : Word;  safe.add(word.max, word.max, word.true)
+//sub_underflow : Word; safe.sub(1, 2, word.true)
+//mul_overflow : Word;  safe.mul(word.max, word.max, word.true)
+//div_by_zero : Word;   safe.div(3,0, word.true)
+//mod_by_zero : Word;   div(3,0, word.true)
+//test_cmps_bad : [:Word, :Word, :Word, :Word, :Word, Word]
 //  [ eq(1, 2, word.true)
 //  , neq(1, 1, word.true)
 //  , lth(2, 1, word.true)
@@ -66,57 +126,19 @@ test_types : [:Word, :Word, :Word, :Word, :Word, Word]
 //  , lte(3, 2, word.true)
 //  ]
 
-add : {a : Word, b : Word, e : Gte(a .+. b, a)} -> Word
-  a .+. b
+// ========================================================
+// =                   Misc. Operations                   =
+// ========================================================
 
-sub : {a : Word, b : Word, e : Lte(b,a)} -> Word
-  a .-. b
+sqrt: {n : Word} -> Word; .u.(.f.(n) .^^. 0.5)
+max : {a : Word, b : Word} -> Word; ite(~{x} Word,gte(a,b),a,b)
+min : {a : Word, b : Word} -> Word; ite(~{x} Word,lte(a,b),a,b)
 
-mul : {a : Word, b : Word, e : Eq((a .*. b) ./. a, a)} -> Word
-  a .*. b
+// this is actually safe, but by construction rather than by proof
+average : {a : Word, b : Word} -> Word
+  let x = add(div(a,2),div(b,2))
+  let y = add(mod(a,2),mod(b,2))
+  add(x, div(y,2))
 
-div : {a : Word, b : Word, e : Neq(b,0)} -> Word
-  a ./. b
-
-mod : {a : Word, b : Word, e : Neq(b,0)} -> Word
-  a .%. b
-
-test_add : Word
-  add(1,2, word.true)
-
-test_sub : Word
-  sub(2,1, word.true)
-
-test_mul : Word
-  mul(3,3, word.true, word.true)
-
-test_div : Word
-  div(3,3, word.true)
-
-test_mod : Word
-  mod(3,3, word.true)
-
-//add_overflow : Word
-//  add(word.max, word.max, word.true)
-//
-//sub_underflow : Word
-//  sub(1, 2, word.true)
-//
-//mul_overflow : Word
-//  mul(word.max, word.max, word.true)
-//
-//div_by_zero : Word
-//  div(3,0, word.true)
-//
-//mod_by_zero : Word
-//  div(3,0, word.true)
-
-difference: {a : Word, b : Word} -> Word
-  if a .>. b:
-    a .-. b
-  else:
-    b .-. a
-
-sqrt: {n : Word} -> Word
-  .u.(.f.(n) .^^. 0.5)
-
+difference: {a : Word, b : Word} -> Word;
+  ite(~{x} Word, gth(a,b),sub(a,b),sub(b,a))
