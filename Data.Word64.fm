@@ -1,0 +1,155 @@
+/* Data.Word64.fm contains functions and types that
+ * implement 64-bit doubles over the native 32-bit Words
+ *
+ * John Burnham (john@sunshinecybernetics.com) fecit
+ */
+
+import Logic
+import Data.Word
+
+// ========================================================
+// =                     Definition                       =
+// ========================================================
+
+Wrd64 : Type
+  [:Word, Word]
+
+word64.max : Wrd64; [word.max,word.max]
+word64.min : Wrd64; [word.min,word.min]
+
+word64.true  : Wrd64; [word.true,word.false]
+word64.false : Wrd64; [word.false,word.false]
+
+// ========================================================
+// =                     Operations                       =
+// ========================================================
+
+copy_word64 : {x : Wrd64} -> [:Wrd64, Wrd64]
+  get [x1,x2] = x
+  cpy x1 = x1; cpy x2 = x2
+  [[x1, x2], [x1, x2]]
+
+ite64 : {~A : Wrd64 -> Type, c : Wrd64, x : A(c), y : A(c)} -> A(c)
+  get [c0,c1] = c
+  cpy c0 = c0; cpy c1 = c1;
+  ite(~{x} A(c),c0,x,y)
+
+add64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  let c0 = add(a0,b0)
+  let c1 = add(a1,b1)
+  ite(~{x} Wrd64, lth(c0,a0), [c0,add(c1,1)], [c0,c1])
+
+//sub64  : {a : Wrd64, b : Wrd64} -> Wrd64
+//  get [a0,a1] = a
+//  get [b0,b1] = b
+//  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+//  let c0 = add(a0,b0)
+//  let c1 = add(a1,b1)
+//  ite(~{x} Wrd64, [c0,add(c1,1)], [c0,c1])
+
+//mul64  : {a : Wrd64, b : Wrd64} -> Wrd64
+//div64  : {a : Wrd64, b : Wrd64} -> Wrd64
+//mod64  : {a : Wrd64, b : Wrd64} -> Wrd64
+//exp64  : {a : Wrd64, b : Wrd64} -> Wrd64
+
+and64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  [and(a0,b0), and(a1,b1)]
+
+or64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  [or(a0,b0), or(a1,b1)]
+
+xor64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  [xor(a0,b0), xor(a1,b1)]
+
+//rsh64  : {a : Wrd64, b : Wrd64} -> Wrd64
+//lsh64  : {a : Wrd64, b : Wrd64} -> Wrd64
+
+gth64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  let cond = or(gth(a1,b1), and(eq(a1,b1),gth(a0,b0)))
+  ite(~{x} Wrd64, cond, word64.false, word64.true)
+
+lth64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  let cond = or(lth(a1,b1), and(eq(a1,b1),lth(a0,b0)))
+  ite(~{x} Wrd64, cond, word64.false, word64.true)
+
+gte64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  let cond = or(gth(a1,b1), and(eq(a1,b1),gte(a0,b0)))
+  ite(~{x} Wrd64, cond, word64.true, word64.false)
+
+lte64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  cpy a0 = a0; cpy b0 = b0; cpy a1 = a1; cpy b1 = b1
+  let cond = or(lth(a1,b1), and(eq(a1,b1),lte(a0,b0)))
+  ite(~{x} Wrd64, cond, word64.true, word64.false)
+
+eq64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  ite(~{x} Wrd64, and(eq(a0,b0),eq(a1,b1)), word64.true, word64.false)
+
+neq64  : {a : Wrd64, b : Wrd64} -> Wrd64
+  get [a0,a1] = a
+  get [b0,b1] = b
+  ite(~{x} Wrd64, and(eq(a0,b0),eq(a1,b1)), word64.false, word64.true)
+
+//fadd64 : {a : Wrd64, b : Wrd64} -> Wrd64
+//fsub64 : {a : Wrd64, b : Wrd64} -> Wrd64
+//fmul64 : {a : Wrd64, b : Wrd64} -> Wrd64
+//fdiv64 : {a : Wrd64, b : Wrd64} -> Wrd64
+//fmod64 : {a : Wrd64, b : Wrd64} -> Wrd64
+//fexp64 : {a : Wrd64, b : Wrd64} -> Wrd64
+
+not64 : {a : Wrd64} -> Wrd64;
+  get [a0,a1] = a
+  [not(a0), not(a1)]
+
+// ========================================================
+// =                Type-Level Comparison                 =
+// ========================================================
+
+word64.refl_true  : Equal(Wrd64, %word64.true, %word64.true)
+  refl(~Wrd64, ~%word64.true)
+word64.refl_false : Equal(Wrd64, %word64.false, %word64.false)
+  refl(~Wrd64, ~%word64.false)
+
+// type-level comparisons
+IsWrd64True : { f : Wrd64 -> Wrd64 -> Wrd64, a : Wrd64, b : Wrd64} -> Type
+  Equal(Wrd64, %f(a,b), %word64.true)
+IsWrd64False : { f : Wrd64 -> Wrd64 -> Wrd64, a : Wrd64, b : Wrd64} -> Type
+  Equal(Wrd64, %f(a,b), %word64.false)
+
+// Convenient short type-level comparisons
+Eq64  : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%eq64(a,b),%word64.true)
+Neq64 : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%neq64(a,b),%word64.true)
+Lth64 : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%lth64(a,b),%word64.true)
+Lte64 : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%lte64(a,b),%word64.true)
+Gth64 : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%gth64(a,b),%word64.true)
+Gte64 : {a : Wrd64, b : Wrd64} -> Type; Equal(Wrd64,%gte64(a,b),%word64.true)
+
+// ========================================================
+// =                   Safe Operations                    =
+// ========================================================
+
+// TODO

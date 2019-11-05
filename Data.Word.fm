@@ -1,3 +1,10 @@
+/* Data.Word.fm contains functions for safely manipulating
+ * the native 32-bit Word numeric type without causing
+ * overflows or underflows
+ *
+ * John Burnham (john@sunshinecybernetics.com) fecit
+ */
+
 import Logic
 
 // ========================================================
@@ -6,6 +13,9 @@ import Logic
 
 word.max : Word; 4294967295
 word.min : Word; 0
+
+word.true  : Word; 1
+word.false : Word; 0
 
 // ========================================================
 // =                     Operations                       =
@@ -34,6 +44,7 @@ lth  : {a : Word, b : Word} -> Word; a .<. b
 gte  : {a : Word, b : Word} -> Word; (a .<. b) .#. 1
 lte  : {a : Word, b : Word} -> Word; (a .>. b) .#. 1
 eq   : {a : Word, b : Word} -> Word; a .==. b
+neq  : {a : Word, b : Word} -> Word; (a .==. b) .#. 1
 fadd : {a : Word, b : Word} -> Word; a .++. b
 fsub : {a : Word, b : Word} -> Word; a .--. b
 fmul : {a : Word, b : Word} -> Word; a .**. b
@@ -49,9 +60,8 @@ f_to_u : {a : Word} -> Word; .u.(a)
 // =                Type-Level Comparison                 =
 // ========================================================
 
-// true == 1, false == 0
-word.true : Equal(Word, %1, %1); refl(~Word, ~%1)
-word.false : Equal(Word, %0, %0); refl(~Word, ~%0)
+word.refl_true : Equal(Word, %1, %1); refl(~Word, ~%1)
+word.refl_false : Equal(Word, %0, %0); refl(~Word, ~%0)
 
 // type-level comparisons
 IsWordTrue : { f : Word -> Word -> Word, a : Word, b : Word} -> Type
@@ -62,7 +72,7 @@ IsWordFalse : { f : Word -> Word -> Word, a : Word, b : Word} -> Type
 // Convenient short type-level comparisons
 
 Eq  : {a : Word, b : Word} -> Type; Equal(Word, %eq(a,b), %1)
-Neq : {a : Word, b : Word} -> Type; Equal(Word, %not(eq(a,b)), %1)
+Neq : {a : Word, b : Word} -> Type; Equal(Word, %neq(a,b), %1)
 Lth : {a : Word, b : Word} -> Type; Equal(Word, %lth(a,b), %1)
 Lte : {a : Word, b : Word} -> Type; Equal(Word, %lte(a,b), %1)
 Gth : {a : Word, b : Word} -> Type; Equal(Word, %gth(a,b), %1)
@@ -76,7 +86,7 @@ Gte : {a : Word, b : Word} -> Type; Equal(Word, %gte(a,b), %1)
 // overflow nor underflow
 
 safe.eq  : {a : Word, b : Word, e : Eq(a,b) } -> Word; eq(a,b)
-safe.neq : {a : Word, b : Word, e : Neq(a,b)} -> Word; not(eq(a,b))
+safe.neq : {a : Word, b : Word, e : Neq(a,b)} -> Word; neq(a,b)
 safe.lth : {a : Word, b : Word, e : Lth(a,b)} -> Word; lth(a,b)
 safe.gte : {a : Word, b : Word, e : Gte(a,b)} -> Word; gte(a,b)
 safe.gth : {a : Word, b : Word, e : Gth(a,b)} -> Word; gth(a,b)
@@ -93,37 +103,37 @@ safe.mod : {a : Word, b : Word, e : Neq(b,0)} -> Word;               mod(a,b)
 // -------
 
 // proof of the comparison evidence can be provided with
-// `word.true`, since the compiler will reduce the theorem
+// `word.is_true`, since the compiler will reduce the theorem
 // to normal form automatically.
 //
 // **Success tests**
-//test_add : Word; safe.add(1,2, word.true)
-//test_sub : Word; safe.sub(2,1, word.true)
-//test_mul : Word; safe.mul(3,3, word.true)
-//test_div : Word; safe.div(3,3, word.true)
-//test_mod : Word; safe.mod(3,3, word.true)
+//test_add : Word; safe.add(1,2, word.refl_true)
+//test_sub : Word; safe.sub(2,1, word.refl_true)
+//test_mul : Word; safe.mul(3,3, word.refl_true)
+//test_div : Word; safe.div(3,3, word.refl_true)
+//test_mod : Word; safe.mod(3,3, word.refl_true)
 //test_cmps : [:Word, :Word, :Word, :Word, :Word, Word]
-//  [ safe.eq(1,1,word.true)
-//  , safe.neq(1,2,word.true)
-//  , safe.lth(1,2,word.true)
-//  , safe.gte(2,1,word.true)
-//  , safe.gth(2,1,word.true)
-//  , safe.lte(1,2,word.true)
+//  [ safe.eq(1,1,word.refl_true)
+//  , safe.neq(1,2,word.refl_true)
+//  , safe.lth(1,2,word.refl_true)
+//  , safe.gte(2,1,word.refl_true)
+//  , safe.gth(2,1,word.refl_true)
+//  , safe.lte(1,2,word.refl_true)
 //  ]
 //
 // **Failure tests**
-//add_overflow : Word;  safe.add(word.max, word.max, word.true)
-//sub_underflow : Word; safe.sub(1, 2, word.true)
-//mul_overflow : Word;  safe.mul(word.max, word.max, word.true)
-//div_by_zero : Word;   safe.div(3,0, word.true)
-//mod_by_zero : Word;   div(3,0, word.true)
+//add_overflow : Word;  safe.add(word.max, word.max, word.refl_true)
+//sub_underflow : Word; safe.sub(1, 2, word.refl_true)
+//mul_overflow : Word;  safe.mul(word.max, word.max, word.refl_true)
+//div_by_zero : Word;   safe.div(3,0, word.refl_true)
+//mod_by_zero : Word;   div(3,0, word.refl_true)
 //test_cmps_bad : [:Word, :Word, :Word, :Word, :Word, Word]
-//  [ eq(1, 2, word.true)
-//  , neq(1, 1, word.true)
-//  , lth(2, 1, word.true)
-//  , gte(1, 2, word.true)
-//  , gth(1, 1, word.true)
-//  , lte(3, 2, word.true)
+//  [ eq(1, 2, word.refl_true)
+//  , neq(1, 1, word.refl_true)
+//  , lth(2, 1, word.refl_true)
+//  , gte(1, 2, word.refl_true)
+//  , gth(1, 1, word.refl_true)
+//  , lte(3, 2, word.refl_true)
 //  ]
 
 // ========================================================
